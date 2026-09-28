@@ -1,6 +1,5 @@
 import { NPCS } from "../data/npcs";
 
-const TALK_DISTANCE = 40;
 const PAUSE_FRAMES = [50, 140]; // walkers pause at each point; traffic doesn't
 
 const images = {}; // src → HTMLImageElement | null (missing sprite)
@@ -36,9 +35,6 @@ export async function createNpcs(worldId) {
       frame: 0,
       dir: "down",
       moving: false,
-      talking: false,
-      lineIdx: 0,
-      encounter: 0,
     }));
 }
 
@@ -63,24 +59,9 @@ function advanceTarget(n) {
   }
 }
 
-// Moves every NPC one frame. Returns the NPC the player is talking to, or null.
-// NPCs stop while the player is close and say their next line each encounter.
-export function updateNpcs(npcs, player) {
-  let talker = null;
+// Moves every NPC one frame along its route
+export function updateNpcs(npcs) {
   for (const n of npcs) {
-    const near = Math.hypot(n.x - player.x, n.y - player.y) < TALK_DISTANCE;
-    if (near && !n.talking) {
-      n.talking = true;
-      n.encounter++;
-    } else if (!near && n.talking) {
-      n.talking = false;
-      n.lineIdx = (n.lineIdx + 1) % n.lines.length;
-    }
-    if (n.talking) {
-      n.moving = false;
-      if (!talker) talker = n;
-      continue;
-    }
     if (n.pause > 0) {
       n.pause--;
       n.moving = false;
@@ -103,9 +84,4 @@ export function updateNpcs(npcs, player) {
     n.moving = true;
     n.frame++;
   }
-  return talker;
-}
-
-export function npcLine(n) {
-  return n.lines[n.lineIdx % n.lines.length];
 }

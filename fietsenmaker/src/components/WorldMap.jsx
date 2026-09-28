@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { WORLDS, CONNECTION_MAP, loadWorldLayout } from "../data/worlds";
 import { createPlayer, updatePlayer, getNearbyBuilding } from "./Player";
 import { drawWorld, loadWorldSprites } from "./WorldRenderer";
-import { createNpcs, updateNpcs, npcLine } from "./Npcs";
+import { createNpcs, updateNpcs } from "./Npcs";
 import BuildingPrompt from "./BuildingPrompt";
 import RocketLaunch from "./RocketLaunch";
 import { START_WORLD, START_LAUNCH, START_TOUCH } from "../data/debug";
@@ -35,7 +35,6 @@ export default function WorldMap({ onSelect, onGarage, totalStars, todayPlayed }
     window.addEventListener("touchstart", on, { once: true });
     return () => window.removeEventListener("touchstart", on);
   }, [touch]);
-  const [talk, setTalk] = useState(null); // { key, text } of the NPC speaking
   const [showRocketLaunch, setShowRocketLaunch] = useState(START_LAUNCH && !savedState);
 
   const worldDef = WORLDS[currentWorldId];
@@ -171,9 +170,7 @@ export default function WorldMap({ onSelect, onGarage, totalStars, todayPlayed }
         }
       }
 
-      const talker = updateNpcs(npcsRef.current, playerRef.current);
-      const talkKey = talker ? `${talker.id}-${talker.encounter}` : null;
-      setTalk((prev) => (prev?.key === talkKey ? prev : talker ? { key: talkKey, text: npcLine(talker) } : null));
+      updateNpcs(npcsRef.current);
 
       const nb = getNearbyBuilding(playerRef.current, layout);
       setNearBuilding((prev) => (prev?.id !== nb?.id ? nb : prev));
@@ -181,7 +178,7 @@ export default function WorldMap({ onSelect, onGarage, totalStars, todayPlayed }
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext("2d");
-        drawWorld(ctx, playerRef.current, nb, worldDef, layout, npcsRef.current, talker);
+        drawWorld(ctx, playerRef.current, nb, worldDef, layout, npcsRef.current);
       }
 
       animId = requestAnimationFrame(loop);
@@ -307,12 +304,6 @@ export default function WorldMap({ onSelect, onGarage, totalStars, todayPlayed }
         </div>
       )}
 
-      {/* What the NPC says is drawn on the canvas; this hidden copy is read aloud */}
-      {talk && (
-        <div key={talk.key} data-speak style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 }}>
-          {talk.text}
-        </div>
-      )}
 
       {/* Building prompt */}
       {touch && ready && !showRocketLaunch && <Joystick keysRef={keysRef} />}

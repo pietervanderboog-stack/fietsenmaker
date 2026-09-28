@@ -1,5 +1,5 @@
 import { DEBUG } from "../data/debug";
-import { npcLine, npcImage } from "./Npcs";
+import { npcImage } from "./Npcs";
 import { SHEETS } from "../data/npcs";
 
 // Sprite cache keyed by world ID
@@ -31,7 +31,7 @@ const DIR_ROW = { down: 0, left: 1, right: 2, up: 3 };
 // Rocket sprite has different row order: 0=up, 1=left, 2=right, 3=down
 const ROCKET_DIR_ROW = { up: 0, left: 1, right: 2, down: 3 };
 
-export function drawWorld(ctx, player, nearBuilding, worldDef, layout, npcs = [], talker = null) {
+export function drawWorld(ctx, player, nearBuilding, worldDef, layout, npcs = []) {
   const { CITY_W, CITY_H, DEBUG_DRAW, BUILDINGS, ROADS, INTERACT_DISTANCE, PLAYER_SIZE } = layout;
   const sprites = spriteCache[worldDef.id] || {};
   const { width, height } = ctx.canvas;
@@ -120,7 +120,6 @@ export function drawWorld(ctx, player, nearBuilding, worldDef, layout, npcs = []
     ctx.textAlign = "start";
   }
 
-  if (talker) drawSpeechBubble(ctx, talker, npcLine(talker), layout.CITY_W);
 
   ctx.restore();
 }
@@ -143,57 +142,6 @@ function drawNpcs(ctx, npcs) {
     }
     ctx.restore();
   }
-}
-
-function wrapText(ctx, text, maxWidth) {
-  const words = text.split(" ");
-  const lines = [];
-  let line = "";
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-function drawSpeechBubble(ctx, npc, text, worldW) {
-  ctx.save();
-  ctx.font = "bold 9px Quicksand, sans-serif";
-  const lines = wrapText(ctx, text, 130);
-  const lineH = 11;
-  const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 14;
-  const h = lines.length * lineH + 10;
-  const cx = npc.x + 16;
-  // Keep the bubble inside the world horizontally
-  const bx = Math.max(4, Math.min(worldW - w - 4, cx - w / 2));
-  const by = npc.y - h - 8;
-
-  ctx.fillStyle = "rgba(255,255,255,0.96)";
-  ctx.strokeStyle = "rgba(0,0,0,0.25)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(bx, by, w, h, 7);
-  ctx.fill();
-  ctx.stroke();
-  // Tail
-  ctx.beginPath();
-  ctx.moveTo(cx - 5, by + h);
-  ctx.lineTo(cx, by + h + 6);
-  ctx.lineTo(cx + 5, by + h);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = "#2d3436";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  lines.forEach((l, i) => ctx.fillText(l, bx + 7, by + 6 + i * lineH));
-  ctx.restore();
 }
 
 function drawExitArrows(ctx, layout) {

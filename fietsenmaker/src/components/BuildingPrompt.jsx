@@ -20,7 +20,7 @@ export default function BuildingPrompt({ building, onEnter, touch }) {
       }}
     >
       <div style={{ fontSize: 36, marginBottom: 4 }}>{building.emoji}</div>
-      <div data-speak style={{ fontSize: 17, fontWeight: 700, color: "#2d3436", marginBottom: 10 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "#2d3436", marginBottom: 10 }}>
         {building.label}
       </div>
       <button

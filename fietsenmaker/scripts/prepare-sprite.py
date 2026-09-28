@@ -3,6 +3,8 @@
   python scripts/prepare-sprite.py <input.png> <name> [--mirror-right] [--cols=N] [--height=PX]
       --cols=N    Gemini often returns N columns instead of 4 (e.g. 6); 4 are picked evenly
       --height=PX tallest frame in px (default 28 = player size; ~16 for small animals)
+      --picks=a,b,c,d  which 4 frames (0-based) to use per row, e.g. 0,1,2,4 to skip
+                  near-duplicate poses (default: 4 spread evenly)
       --auto      find the figures per row instead of assuming a grid (Gemini sometimes
                   puts 8 figures in one row and 6 in the next)
       → public/sprites/<name>.png + debug/<name>-check.png (enlarged, on grey)
@@ -61,7 +63,7 @@ def find_figures(band):
     return [m for m in merged if m[1] - m[0] > 12]
 
 
-def prepare(src, name, mirror_right=False, cols=4, max_h=MAX_H, auto=False):
+def prepare(src, name, mirror_right=False, cols=4, max_h=MAX_H, auto=False, picks=None):
     im = Image.open(src).convert("RGBA")
     ch = im.height / 4
     if auto:
@@ -71,11 +73,11 @@ def prepare(src, name, mirror_right=False, cols=4, max_h=MAX_H, auto=False):
             figs = find_figures(band)
             if len(figs) < 4:
                 sys.exit(f"Row {r + 1}: found only {len(figs)} figures")
-            picks = [figs[int(i * len(figs) / 4)] for i in range(4)]
-            cells.append([band.crop((a, 0, b, band.height)) for a, b in picks])
+            chosen = [figs[i] for i in picks] if picks else [figs[int(i * len(figs) / 4)] for i in range(4)]
+            cells.append([band.crop((a, 0, b, band.height)) for a, b in chosen])
     else:
         cw = im.width / cols
-        picks = [int(i * cols / 4) for i in range(4)]
+        picks = picks or [int(i * cols / 4) for i in range(4)]
         # 2px inset per cell drops grid seams / neighbours bleeding in
         cells = [[key_out(im.crop((round(c * cw) + 2, round(r * ch) + 2, round((c + 1) * cw) - 2, round((r + 1) * ch) - 2)))
                   for c in picks] for r in range(4)]
@@ -137,6 +139,7 @@ if __name__ == "__main__":
         opt = dict(a[2:].split("=", 1) for a in sys.argv if a.startswith("--") and "=" in a)
         prepare(args[0], args[1], mirror_right="--mirror-right" in sys.argv,
                 cols=int(opt.get("cols", 4)), max_h=int(opt.get("height", MAX_H)),
-                auto="--auto" in sys.argv)
+                auto="--auto" in sys.argv,
+                picks=[int(p) for p in opt["picks"].split(",")] if "picks" in opt else None)
     else:
         sys.exit(__doc__)

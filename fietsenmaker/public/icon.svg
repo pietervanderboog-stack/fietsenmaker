@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#FF9F43"/>
+  <!-- Left wheel -->
+  <circle cx="148" cy="338" r="86" fill="none" stroke="white" stroke-width="30"/>
+  <!-- Right wheel -->
+  <circle cx="364" cy="338" r="86" fill="none" stroke="white" stroke-width="30"/>
+  <!-- Frame triangle -->
+  <polyline points="148,338 256,162 364,338" fill="none" stroke="white" stroke-width="28"
+    stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Handlebar -->
+  <line x1="318" y1="148" x2="398" y2="148" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <!-- Seat -->
+  <line x1="236" y1="162" x2="280" y2="162" stroke="white" stroke-width="24" stroke-linecap="round"/>
+</svg>
